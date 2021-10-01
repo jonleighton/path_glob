@@ -35,7 +35,6 @@ defmodule PathGlob do
       {:ok, parts, "", _, _, _} ->
         parts
         |> Enum.join()
-        |> IO.inspect()
         |> Regex.compile!()
 
       {:error, error, _, _, _, _} ->

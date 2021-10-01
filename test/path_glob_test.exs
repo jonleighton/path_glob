@@ -60,7 +60,9 @@ defmodule PathGlobTest do
     within_tmpdir(path, fn ->
       for glob <- List.wrap(globs) do
         assert path in Path.wildcard(glob)
-        assert PathGlob.match?(path, glob)
+
+        assert PathGlob.match?(path, glob),
+               "expected '#{glob}' [compiled: #{inspect_compiled(glob)}] to match '#{path}'"
       end
     end)
   end
@@ -69,9 +71,17 @@ defmodule PathGlobTest do
     within_tmpdir(path, fn ->
       for glob <- List.wrap(globs) do
         assert Path.wildcard(glob) == []
-        refute PathGlob.match?(path, glob)
+
+        refute PathGlob.match?(path, glob),
+               "expected '#{glob}' [compiled: #{inspect_compiled(glob)}] not to match '#{path}'"
       end
     end)
+  end
+
+  defp inspect_compiled(glob) do
+    glob
+    |> PathGlob.compile()
+    |> inspect()
   end
 
   defp assert_error(path, globs) do
