@@ -13,19 +13,45 @@ defmodule PathGlob do
   end
 
   defp parse(glob) do
-    "^#{parse_chars(glob)}$"
+    "^(#{parse_chars(glob, [], "")})$"
   end
 
-  defp parse_chars("") do
+  defp parse_chars("", _stack, _saved) do
     ""
   end
 
-  defp parse_chars(chars) do
+  defp parse_chars(chars, stack, saved) do
     {first, rest} = String.split_at(chars, 1)
-    parse_char(first) <> parse_chars(rest)
+    {first, stack} = parse_char(first, stack, saved)
+
+    if Enum.empty?(stack) do
+      first <> parse_chars(rest, stack, saved)
+    else
+      parse_chars(rest, stack, first <> saved)
+    end
   end
 
-  defp parse_char("?"), do: "."
-  defp parse_char("*"), do: ".*"
-  defp parse_char(char), do: Regex.escape(char)
+  defp parse_char("?", stack, _) do
+    {".", stack}
+  end
+
+  defp parse_char("*", stack, _) do
+    {".*", stack}
+  end
+
+  defp parse_char("{", stack, _) do
+    {"(", ["{" | stack]}
+  end
+
+  defp parse_char("}", ["{" | stack], saved) do
+    {String.reverse(")" <> saved), stack}
+  end
+
+  defp parse_char(",", ["{" | _] = stack, _) do
+    {"|", stack}
+  end
+
+  defp parse_char(char, stack, _) do
+    {Regex.escape(char), stack}
+  end
 end
