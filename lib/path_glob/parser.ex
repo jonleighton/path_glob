@@ -2,28 +2,28 @@ defmodule PathGlob.Parser do
   import NimbleParsec
 
   def question() do
-    ascii_char([??])
+    string("?")
     |> replace(".")
   end
 
   def star() do
-    ascii_char([?*])
+    string("*")
     |> replace(".*")
   end
 
   def alternatives_open() do
-    ascii_char([?{])
+    string("{")
     |> replace("(")
   end
 
   def alternatives_close(combinator) do
     combinator
-    |> replace(ascii_char([?}]), ")")
+    |> replace(string("}"), ")")
   end
 
   def _or(combinator) do
     combinator
-    |> replace(ascii_char([?,]), "|")
+    |> replace(string(","), "|")
   end
 
   def alternatives() do
@@ -34,13 +34,13 @@ defmodule PathGlob.Parser do
   end
 
   def characters_open() do
-    ascii_char([?[])
+    string("[")
     |> replace("(")
   end
 
   def characters_close(combinator) do
     combinator
-    |> replace(ascii_char([?]]), ")")
+    |> replace(string("]"), ")")
   end
 
   def character_item(combinator \\ empty(), exclude) do
@@ -60,7 +60,7 @@ defmodule PathGlob.Parser do
   def character_range(exclude) do
     replace(empty(), "[")
     |> character_item(exclude)
-    |> ascii_string([?-], 1)
+    |> string("-")
     |> character_item(exclude)
     |> replace(empty(), "]")
   end
