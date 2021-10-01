@@ -24,6 +24,11 @@ defmodule PathGlobTest do
     refute_match("foo", ["{bar}", "{bar,baz}", "{b}oo"])
   end
 
+  test "basic [] pattern" do
+    assert_match("foo", ["f[o]o", "f[ao]o", "f[a-z]o", "f[o,a]o"])
+    refute_match("foo", ["f[a]o", "f[a-d]o", "f[a,b]o"])
+  end
+
   test "special characters in weird places" do
     assert_match("fo,o", ["fo,o", "fo,{o}"])
     assert_error("fo{o", "fo{o")
