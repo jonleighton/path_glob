@@ -6,7 +6,7 @@ defmodule PathGlobTest do
 
   test "literal characters" do
     assert_match("foo", "foo")
-    refute_match("foo", ["bar", "fo"])
+    refute_match("foo", ["bar", "fo", "FOO"])
   end
 
   test "? pattern" do
