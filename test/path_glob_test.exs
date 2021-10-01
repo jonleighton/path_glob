@@ -19,6 +19,20 @@ defmodule PathGlobTest do
     refute_match("foo", "b*")
   end
 
+  test "basic ** pattern" do
+    assert_match("foo", ["**", "**o", "**/foo", "**//foo"])
+    assert_match("foo.ex", ["**", "**o.ex", "**/foo.ex", "**//foo.ex"])
+    assert_match("foo/bar", ["**", "**/bar"])
+    assert_match("foo/bar.ex", ["**", "**/bar.ex"])
+    assert_match("foo/bar/baz", ["**", "**/baz"])
+    assert_match("foo/bar/baz.ex", ["**", "**/baz.ex"])
+
+    refute_match("foo/bar", ["**bar"])
+    refute_match("foo/bar.ex", ["**bar.ex"])
+    refute_match("foo/bar/baz", ["**baz"])
+    refute_match("foo/bar/baz.ex", ["**baz.ex"])
+  end
+
   test "basic {} pattern" do
     assert_match("foo", ["{foo}", "{foo,bar}", "{fo,ba}o"])
     refute_match("foo", ["{bar}", "{bar,baz}", "{b}oo"])
@@ -41,7 +55,7 @@ defmodule PathGlobTest do
   defp assert_match(path, globs) do
     within_tmpdir(path, fn ->
       for glob <- List.wrap(globs) do
-        assert Path.wildcard(glob) == [path]
+        assert path in Path.wildcard(glob)
         assert PathGlob.match?(path, glob)
       end
     end)
@@ -76,6 +90,8 @@ defmodule PathGlobTest do
 
     try do
       File.cd!(tmpdir, fn ->
+        dir = Path.dirname(path)
+        unless dir == ".", do: File.mkdir_p!(dir)
         File.write!(path, "")
         fun.()
       end)

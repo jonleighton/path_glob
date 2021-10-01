@@ -6,6 +6,18 @@ defmodule PathGlob.Parser do
     |> replace(".")
   end
 
+  def double_star_slash() do
+    string("**/")
+    |> repeat(string("/"))
+    |> replace("([^/]+/)*")
+  end
+
+  def double_star() do
+    string("**")
+    |> repeat(string("/"))
+    |> replace("([^/]+/)*[^/]+")
+  end
+
   def star() do
     string("*")
     |> replace(".*")
@@ -109,6 +121,8 @@ defmodule PathGlob.Parser do
   def alternative(combinator, exclude) do
     choice(combinator, [
       question(),
+      double_star_slash(),
+      double_star(),
       star(),
       characters(),
       literal(),
