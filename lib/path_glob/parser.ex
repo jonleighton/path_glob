@@ -28,29 +28,51 @@ defmodule PathGlob.Parser do
 
   def alternatives() do
     alternatives_open()
-    |> repeat(alternative() |> alternatives_or())
-    |> alternative()
+    |> repeat(
+      alternative([?,])
+      |> alternatives_or()
+    )
+    |> alternative([?}])
     |> alternatives_close()
   end
 
-  # FIXME: , should match outside of alternatives?
+  @special_chars [??, ?*, ?{, ?}, ?[, ?], ?,]
+
   def literal() do
-    [??, ?*, ?{, ?}, ?[, ?], ?,]
+    @special_chars
     |> Enum.map(&{:not, &1})
     |> utf8_string(min: 1)
     |> map({Regex, :escape, []})
   end
 
-  def alternative(combinator \\ empty()) do
+  def special_literal(exclude \\ []) do
+    (@special_chars -- exclude)
+    |> utf8_string(1)
+    |> map({Regex, :escape, []})
+  end
+
+  def alternative() do
+    alternative([])
+  end
+
+  def alternative(exclude) do
+    alternative(empty(), exclude)
+  end
+
+  def alternative(combinator, exclude) do
     choice(combinator, [
       question(),
       star(),
-      literal()
+      literal(),
+      special_literal(exclude)
     ])
   end
 
   def term() do
-    choice([alternative(), alternatives()])
+    choice([
+      alternatives(),
+      alternative([?{])
+    ])
   end
 
   def glob do

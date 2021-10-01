@@ -24,6 +24,15 @@ defmodule PathGlobTest do
     refute_match("foo", ["{bar}", "{bar,baz}", "{b}oo"])
   end
 
+  test "special characters in weird places" do
+    assert_match("fo,o", ["fo,o", "fo,{o}"])
+    assert_error("fo{o", "fo{o")
+    assert_match("fo}o", ["fo}o", "fo}{o}"])
+    assert_error("fo{o{o}o}", "fo{o{o}o}")
+    assert_match("fo[o", "fo[o")
+    assert_match("fo]o", "fo]o")
+  end
+
   defp assert_match(path, globs) do
     within_tmpdir(path, fn ->
       for glob <- List.wrap(globs) do
@@ -40,6 +49,20 @@ defmodule PathGlobTest do
         refute PathGlob.match?(path, glob)
       end
     end)
+  end
+
+  defp assert_error(path, globs) do
+    for glob <- List.wrap(globs) do
+      try do
+        Path.wildcard(glob) == [path]
+      rescue
+        _ in [ErlangError, CaseClauseError] -> nil
+      else
+        _ -> raise "expected an error"
+      end
+
+      assert_raise(ArgumentError, fn -> PathGlob.match?(path, glob) end)
+    end
   end
 
   defp within_tmpdir(path, fun) do
