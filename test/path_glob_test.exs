@@ -6,20 +6,29 @@ defmodule PathGlobTest do
 
   test "literal characters" do
     assert_match("foo", "foo")
-    refute_match("foo", "bar")
+    refute_match("foo", ["bar", "fo"])
   end
 
-  defp assert_match(path, glob) do
+  test "? pattern" do
+    assert_match("foo", ["?oo", "f?o", "???"])
+    refute_match("foo", ["foo?", "f?oo"])
+  end
+
+  defp assert_match(path, globs) do
     within_tmpdir(path, fn ->
-      assert Path.wildcard(glob) == [path]
-      assert PathGlob.match?(path, glob)
+      for glob <- List.wrap(globs) do
+        assert Path.wildcard(glob) == [path]
+        assert PathGlob.match?(path, glob)
+      end
     end)
   end
 
-  defp refute_match(path, glob) do
+  defp refute_match(path, globs) do
     within_tmpdir(path, fn ->
-      assert Path.wildcard(glob) == []
-      refute PathGlob.match?(path, glob)
+      for glob <- List.wrap(globs) do
+        assert Path.wildcard(glob) == []
+        refute PathGlob.match?(path, glob)
+      end
     end)
   end
 
