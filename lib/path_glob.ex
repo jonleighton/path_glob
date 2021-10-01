@@ -1,18 +1,8 @@
 defmodule PathGlob do
-  @moduledoc """
-  Documentation for `PathGlob`.
-  """
-
   @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> PathGlob.hello()
-      :world
-
+  TODO
   """
-  def hello do
-    :world
+  def match?(path, glob) do
+    path == glob
   end
 end
