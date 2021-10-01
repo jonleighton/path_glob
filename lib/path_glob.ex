@@ -20,12 +20,12 @@ defmodule PathGlob do
     ""
   end
 
-  defp parse_chars("?" <> rest) do
-    "." <> parse_chars(rest)
-  end
-
   defp parse_chars(chars) do
     {first, rest} = String.split_at(chars, 1)
-    first <> parse_chars(rest)
+    parse_char(first) <> parse_chars(rest)
   end
+
+  defp parse_char("?"), do: "."
+  defp parse_char("*"), do: ".*"
+  defp parse_char(char), do: Regex.escape(char)
 end

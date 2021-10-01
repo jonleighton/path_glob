@@ -14,6 +14,11 @@ defmodule PathGlobTest do
     refute_match("foo", ["foo?", "f?oo"])
   end
 
+  test "basic * pattern" do
+    assert_match("foo", ["*", "f*", "fo*", "foo*", "*foo"])
+    refute_match("foo", "b*")
+  end
+
   defp assert_match(path, globs) do
     within_tmpdir(path, fn ->
       for glob <- List.wrap(globs) do
