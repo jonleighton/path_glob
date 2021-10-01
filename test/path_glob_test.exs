@@ -16,7 +16,11 @@ defmodule PathGlobTest do
 
   test "basic * pattern" do
     assert_match("foo", ["*", "f*", "fo*", "foo*", "*foo"])
+    assert_match("foo.ex", ["*", "f*", "foo*", "foo.*", "*.ex", "*ex"])
+    assert_match("foo/bar", ["foo/*", "foo/b*", "foo/ba*", "foo/bar*", "foo/*bar", "*/bar"])
+
     refute_match("foo", "b*")
+    refute_match("foo/bar", ["foo/f*", "*ar"])
   end
 
   test "basic ** pattern" do

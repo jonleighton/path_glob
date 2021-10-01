@@ -20,7 +20,7 @@ defmodule PathGlob.Parser do
 
   def star() do
     string("*")
-    |> replace(".*")
+    |> replace("[^/]*")
   end
 
   def alternatives_open() do
