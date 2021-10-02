@@ -5,7 +5,7 @@ defmodule PathGlobTest do
   @tmpdir "#{__DIR__}/.tmp"
 
   test "literal characters" do
-    assert_match("foo", "foo")
+    assert_match("foo", ["foo"])
     refute_match("foo", ["bar", "fo", "FOO"])
   end
 
@@ -19,7 +19,7 @@ defmodule PathGlobTest do
     assert_match("foo.ex", ["*", "f*", "foo*", "foo.*", "*.ex", "*ex"])
     assert_match("foo/bar", ["foo/*", "foo/b*", "foo/ba*", "foo/bar*", "foo/*bar", "*/bar"])
 
-    refute_match("foo", "b*")
+    refute_match("foo", ["b*"])
     refute_match("foo/bar", ["foo/f*", "*ar"])
   end
 
@@ -49,16 +49,16 @@ defmodule PathGlobTest do
 
   test "special characters in weird places" do
     assert_match("fo,o", ["fo,o", "fo,{o}"])
-    assert_error("fo{o", "fo{o")
+    assert_error("fo{o", ["fo{o"])
     assert_match("fo}o", ["fo}o", "fo}{o}"])
-    assert_error("fo{o{o}o}", "fo{o{o}o}")
-    assert_match("fo[o", "fo[o")
-    assert_match("fo]o", "fo]o")
+    assert_error("fo{o{o}o}", ["fo{o{o}o}"])
+    assert_match("fo[o", ["fo[o"])
+    assert_match("fo]o", ["fo]o"])
   end
 
   defp assert_match(path, globs) do
     within_tmpdir(path, fn ->
-      for glob <- List.wrap(globs) do
+      for glob <- globs do
         assert path in Path.wildcard(glob)
 
         assert PathGlob.match?(path, glob),
@@ -69,7 +69,7 @@ defmodule PathGlobTest do
 
   defp refute_match(path, globs) do
     within_tmpdir(path, fn ->
-      for glob <- List.wrap(globs) do
+      for glob <- globs do
         assert Path.wildcard(glob) == []
 
         refute PathGlob.match?(path, glob),
