@@ -1,6 +1,11 @@
 defmodule PathGlob.Parser do
   import NimbleParsec
 
+  defp punctuation(combinator \\ empty(), text) do
+    combinator
+    |> ignore(string(text))
+  end
+
   defp question() do
     string("?")
     |> tag(:question)
@@ -31,10 +36,10 @@ defmodule PathGlob.Parser do
   end
 
   defp alternatives() do
-    ignore(string("{"))
-    |> repeat(alternatives_item() |> ignore(string(",")))
+    punctuation("{")
+    |> repeat(alternatives_item() |> punctuation(","))
     |> alternatives_item()
-    |> ignore(string("}"))
+    |> punctuation("}")
     |> tag(:alternatives)
   end
 
@@ -52,7 +57,7 @@ defmodule PathGlob.Parser do
     exclude = [?- | exclude]
 
     character_item(exclude)
-    |> ignore(string("-"))
+    |> punctuation("-")
     |> character_item(exclude)
     |> tag(:character_range)
   end
@@ -70,10 +75,10 @@ defmodule PathGlob.Parser do
   end
 
   defp characters() do
-    ignore(string("["))
-    |> repeat(character([?,, ?]]) |> ignore(string(",")))
+    punctuation("[")
+    |> repeat(character([?,, ?]]) |> punctuation(","))
     |> character([?]])
-    |> ignore(string("]"))
+    |> punctuation("]")
   end
 
   @special_chars [??, ?*, ?{, ?}, ?[, ?], ?,]
