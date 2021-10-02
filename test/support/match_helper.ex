@@ -33,7 +33,7 @@ defmodule PathGlob.MatchHelper do
              "expected Path.wildcard(#{inspect(glob)}) to include '#{path}'"
 
       assert PathGlob.match?(path, glob),
-             "expected '#{glob}' [compiled: #{inspect_compiled(glob)}] to match '#{path}'"
+             "expected '#{glob}' to match '#{path}'"
     end)
   end
 
@@ -43,14 +43,8 @@ defmodule PathGlob.MatchHelper do
              "expected Path.wildcard(#{inspect(glob)}) not to include '#{path}'"
 
       refute PathGlob.match?(path, glob),
-             "expected '#{glob}' [compiled: #{inspect_compiled(glob)}] not to match '#{path}'"
+             "expected '#{glob}' not to match '#{path}'"
     end)
-  end
-
-  defp inspect_compiled(glob) do
-    glob
-    |> PathGlob.compile()
-    |> inspect()
   end
 
   def assert_error(path, glob, wildcard_exception) do
