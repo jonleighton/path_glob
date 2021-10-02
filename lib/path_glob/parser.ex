@@ -40,8 +40,8 @@ defmodule PathGlob.Parser do
 
   def alternatives() do
     alternatives_open()
-    |> repeat(alternative([?,]) |> _or())
-    |> alternative([?}])
+    |> repeat(times(non_alteratives([?,]), min: 1) |> _or())
+    |> times(non_alteratives([?}]), min: 1)
     |> alternatives_close()
   end
 
@@ -104,21 +104,21 @@ defmodule PathGlob.Parser do
     |> map(:escape)
   end
 
-  def special_literal(exclude \\ []) do
+  def special_literal(exclude) do
     (@special_chars -- exclude)
     |> utf8_string(1)
     |> map(:escape)
   end
 
-  def alternative() do
-    alternative([])
+  def non_alteratives() do
+    non_alteratives([])
   end
 
-  def alternative(exclude) do
-    alternative(empty(), exclude)
+  def non_alteratives(exclude) do
+    non_alteratives(empty(), exclude)
   end
 
-  def alternative(combinator, exclude) do
+  def non_alteratives(combinator, exclude) do
     choice(combinator, [
       question(),
       double_star_slash(),
@@ -126,14 +126,14 @@ defmodule PathGlob.Parser do
       star(),
       characters(),
       literal(),
-      special_literal(exclude)
+      special_literal([?{ | exclude])
     ])
   end
 
   def term() do
     choice([
       alternatives(),
-      alternative([?{])
+      non_alteratives()
     ])
   end
 
