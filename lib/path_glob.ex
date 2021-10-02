@@ -41,11 +41,16 @@ defmodule PathGlob do
           |> transform()
           |> Regex.compile!()
 
-        Logger.debug(%{
-          glob: glob,
-          regex: regex,
-          parse_tree: parse_tree
-        })
+        Logger.debug(
+          inspect(
+            %{
+              glob: glob,
+              regex: regex,
+              parse_tree: parse_tree
+            },
+            pretty: true
+          )
+        )
 
         regex
 
