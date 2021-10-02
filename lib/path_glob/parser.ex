@@ -1,6 +1,8 @@
 defmodule PathGlob.Parser do
   import NimbleParsec
 
+  @special_chars ~W(? * { } [ ] , /)
+
   defp punctuation(combinator \\ empty(), text) do
     combinator
     |> ignore(string(text))
@@ -53,12 +55,13 @@ defmodule PathGlob.Parser do
   end
 
   defp alternatives_item(combinator \\ empty()) do
-    combinator
-    |> tag(
+    tag(
+      combinator,
       choice([
-        times(non_alteratives(~W(} ,)), min: 1),
-        empty()
-      ]),
+        non_alternatives(),
+        char(@special_chars -- ~W({ } ,))
+      ])
+      |> repeat(),
       :alternatives_item
     )
   end
@@ -72,8 +75,8 @@ defmodule PathGlob.Parser do
   end
 
   defp character(combinator \\ empty(), exclude) do
-    combinator
-    |> tag(
+    tag(
+      combinator,
       choice([
         punctuation("\\") |> string("-"),
         string_excluding(exclude, 1)
@@ -109,16 +112,19 @@ defmodule PathGlob.Parser do
 
   defp character_class() do
     inner =
-      repeat(character_class_item(~W(, ])) |> punctuation(","))
+      character_class_item(~W(, ]))
+      |> punctuation(",")
+      |> repeat()
       |> character_class_item(~W(]))
 
     punctuation("[")
-    |> choice([string("]") |> tag(:literal) |> optional(inner), inner])
+    |> choice([
+      char("]") |> optional(inner),
+      inner
+    ])
     |> punctuation("]")
     |> tag(:character_class)
   end
-
-  @special_chars ~W(? * { } [ ] , /)
 
   defp string_excluding(chars, range) do
     chars
@@ -131,35 +137,33 @@ defmodule PathGlob.Parser do
     Enum.map(chars, fn <<char>> -> char end)
   end
 
+  defp escaped_char() do
+    punctuation("\\")
+    |> choice([
+      punctuation("\\"),
+      utf8_string([], 1)
+    ])
+  end
+
   defp literal() do
     choice([
-      punctuation("\\")
-      |> choice([
-        punctuation("\\"),
-        utf8_string([], 1)
-      ]),
+      escaped_char(),
       string_excluding(["\\" | @special_chars], min: 1)
     ])
     |> times(min: 1)
     |> tag(:literal)
   end
 
-  defp special_literal(combinator \\ empty(), exclude) do
-    combinator
-    |> utf8_string(to_codepoints(@special_chars -- exclude), 1)
+  defp char(chars) do
+    chars
+    |> List.wrap()
+    |> to_codepoints()
+    |> utf8_string(1)
     |> tag(:literal)
   end
 
-  defp non_alteratives() do
-    non_alteratives([])
-  end
-
-  defp non_alteratives(exclude) do
-    non_alteratives(empty(), exclude)
-  end
-
-  defp non_alteratives(combinator, exclude) do
-    choice(combinator, [
+  defp non_alternatives() do
+    choice([
       question(),
       double_star_slash(),
       double_star(),
@@ -167,15 +171,15 @@ defmodule PathGlob.Parser do
       double_dot(),
       dot(),
       character_class(),
-      literal(),
-      special_literal(["{" | exclude])
+      literal()
     ])
   end
 
   defp term() do
     choice([
       alternatives(),
-      non_alteratives()
+      non_alternatives(),
+      char(@special_chars -- ["{"])
     ])
   end
 
