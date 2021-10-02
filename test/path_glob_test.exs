@@ -1,5 +1,5 @@
 defmodule PathGlobTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest PathGlob
 
   import PathGlob.MatchHelper
