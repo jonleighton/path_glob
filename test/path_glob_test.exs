@@ -169,11 +169,26 @@ defmodule PathGlobTest do
   end
 
   describe "directory traversal" do
-    test "basic" do
+    test ".. pattern" do
       within_tmpdir("foo/bar/baz", fn ->
         assert_match("foo/bar/..", "foo/bar/..")
         assert_match("foo/bar/..", "foo/bar/../")
         assert_match("foo/bar/..", "foo/bar/..//")
+      end)
+    end
+
+    test ". pattern" do
+      within_tmpdir("foo/bar/baz", fn ->
+        assert_match(".", ".")
+        assert_match(".", "./.")
+        assert_match(".", ".//.")
+      end)
+    end
+
+    test "combining . and .." do
+      within_tmpdir("foo/bar/baz", fn ->
+        assert_match("foo/bar/../.", "foo/bar/../.")
+        assert_match("foo/bar/../.", "foo/bar/..//.")
       end)
     end
 
