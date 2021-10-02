@@ -37,8 +37,8 @@ defmodule PathGlob do
         |> Enum.join()
         |> Regex.compile!()
 
-      {:error, error, _, _, _, _} ->
-        raise ArgumentError, "failed to parse '#{glob}': #{error}"
+      {:error, _error, _, _, _, _} ->
+        raise ArgumentError, "failed to parse '#{glob}'"
     end
   end
 end
