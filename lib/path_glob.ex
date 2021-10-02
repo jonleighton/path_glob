@@ -21,6 +21,11 @@ defmodule PathGlob do
   The glob is first parsed and compiled as a regular expression. If you're
   using the same glob multiple times in performance-critical code, consider
   using `compile/1` and caching the result.
+
+  ## Examples
+
+      iex> PathGlob.match?("lib/path_glob.ex", "{lib,test}/path_*.ex")
+      true
   """
   @spec match?(path(), glob()) :: boolean()
   def match?(path, glob) do
@@ -31,6 +36,11 @@ defmodule PathGlob do
   Compiles `glob` to a `Regex`.
 
   Raises `ArgumentError` if `glob` is invalid.
+
+  ## Examples
+
+      iex> PathGlob.compile("{lib,test}/path_*.ex")
+      ~r{^(lib|test)/path_[^/]*\\.ex$}
   """
   @spec compile(glob()) :: Regex.t()
   def compile(glob) do
