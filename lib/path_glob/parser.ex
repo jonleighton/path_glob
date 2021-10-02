@@ -124,7 +124,7 @@ defmodule PathGlob.Parser do
     chars
     |> to_codepoints()
     |> Enum.map(&{:not, &1})
-    |> ascii_string(range)
+    |> utf8_string(range)
   end
 
   defp to_codepoints(chars) do
@@ -136,7 +136,7 @@ defmodule PathGlob.Parser do
       punctuation("\\")
       |> choice([
         punctuation("\\"),
-        ascii_string([], 1)
+        utf8_string([], 1)
       ]),
       string_excluding(["\\" | @special_chars], min: 1)
     ])
@@ -146,7 +146,7 @@ defmodule PathGlob.Parser do
 
   defp special_literal(combinator \\ empty(), exclude) do
     combinator
-    |> ascii_string(to_codepoints(@special_chars -- exclude), 1)
+    |> utf8_string(to_codepoints(@special_chars -- exclude), 1)
     |> tag(:literal)
   end
 

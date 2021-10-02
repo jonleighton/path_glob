@@ -5,10 +5,14 @@ defmodule PathGlobTest do
   import PathGlob.MatchHelper
   require PathGlob.MatchHelper
 
-  # See also
+  # See
   # https://github.com/erlang/otp/blob/master/lib/stdlib/test/filelib_SUITE.erl
-  # to see the patterns that :filelib.wildcard/2 is tested with (which is used
-  # to implement Elixir's Path.wildcard/2).
+  # for the patterns that :filelib.wildcard/2 is tested with (which is used to
+  # implement Elixir's Path.wildcard/2).
+  #
+  # See
+  # https://github.com/elixir-lang/elixir/blob/master/lib/elixir/test/elixir/path_test.exs
+  # for the patterns that Path.wildcard/2 is test with.
 
   describe "literal characters" do
     test_match("foo", "foo")
@@ -20,6 +24,7 @@ defmodule PathGlobTest do
     test_match("?q", ~S(\?q))
     test_match("fo{o", ~S(fo\{o))
     test_error("foo", "", MatchError)
+    test_match("héllò", "héllò")
   end
 
   describe "? pattern" do
