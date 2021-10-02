@@ -58,6 +58,8 @@ defmodule PathGlobTest do
     assert_match("fo,o", ["fo,o", "fo,[o]"])
     assert_match("fo[o", ["fo[o"])
     assert_match("fo]o", ["fo]o"])
+    assert_match("foo123", ["foo[1]23", "foo[1-9]23", "foo[1-39]23"])
+    refute_match("foo123", ["foo[12]3", "foo[1-12]3", "foo[1-123]"])
   end
 
   defp assert_match(path, globs) do

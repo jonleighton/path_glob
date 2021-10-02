@@ -63,6 +63,8 @@ defmodule PathGlob.Parser do
   end
 
   defp character_item(combinator \\ empty(), exclude) do
+    exclude = [?- | exclude]
+
     combinator
     |> map(utf8_string(map_exclude(exclude), 1), :escape)
   end
@@ -78,9 +80,9 @@ defmodule PathGlob.Parser do
 
   defp character_range(exclude) do
     replace(empty(), "[")
-    |> character_item(exclude)
+    |> times(character_item(exclude), min: 1)
     |> string("-")
-    |> character_item(exclude)
+    |> times(character_item(exclude), min: 1)
     |> replace(empty(), "]")
   end
 
