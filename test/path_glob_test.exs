@@ -2,128 +2,129 @@ defmodule PathGlobTest do
   use ExUnit.Case
   doctest PathGlob
 
-  @tmpdir "#{__DIR__}/.tmp"
+  import PathGlob.MatchHelper
+  require PathGlob.MatchHelper
 
   # See also
   # https://github.com/erlang/otp/blob/master/lib/stdlib/test/filelib_SUITE.erl
   # to see the patterns that :filelib.wildcard/2 is tested with (which is used
   # to implement Elixir's Path.wildcard/2).
 
-  test "literal characters" do
-    assert_match("foo", ["foo"])
-    refute_match("foo", ["bar", "fo", "FOO"])
+  describe "literal characters" do
+    test_match("foo", "foo")
+    test_no_match("foo", "bar")
+    test_no_match("foo", "fo")
+    test_no_match("foo", "FOO")
   end
 
-  test "? pattern" do
-    assert_match("foo", ["?oo", "f?o", "f??", "???"])
-    refute_match("foo", ["foo?", "f?oo"])
+  describe "? pattern" do
+    test_match("foo", "?oo")
+    test_match("foo", "f?o")
+    test_match("foo", "f??")
+    test_match("foo", "???")
+    test_no_match("foo", "foo?")
+    test_no_match("foo", "f?oo")
   end
 
-  test "* pattern" do
-    assert_match("foo", ["*", "f*", "fo*", "foo*", "*foo"])
-    assert_match("foo.ex", ["*", "f*", "foo*", "foo.*", "*.ex", "*ex"])
-    assert_match("foo/bar", ["foo/*", "foo/b*", "foo/ba*", "foo/bar*", "foo/*bar", "*/bar"])
-
-    refute_match("foo", ["b*"])
-    refute_match("foo/bar", ["foo/f*", "*ar"])
+  describe "* pattern" do
+    test_match("foo", "*")
+    test_match("foo", "f*")
+    test_match("foo", "fo*")
+    test_match("foo", "foo*")
+    test_match("foo", "*foo")
+    test_match("foo.ex", "*")
+    test_match("foo.ex", "f*")
+    test_match("foo.ex", "foo*")
+    test_match("foo.ex", "foo.*")
+    test_match("foo.ex", "*.ex")
+    test_match("foo.ex", "*ex")
+    test_match("foo/bar", "foo/*")
+    test_match("foo/bar", "foo/b*")
+    test_match("foo/bar", "foo/ba*")
+    test_match("foo/bar", "foo/bar*")
+    test_match("foo/bar", "foo/*bar")
+    test_match("foo/bar", "*/bar")
+    test_no_match("foo", "b*")
+    test_no_match("foo/bar", "foo/f*")
+    test_no_match("foo/bar", "*ar")
   end
 
-  test "** pattern" do
-    assert_match("foo", ["**", "**o", "**/foo", "**//foo"])
-    assert_match("foo.ex", ["**", "**o.ex", "**/foo.ex", "**//foo.ex"])
-    assert_match("foo/bar", ["**", "**/bar"])
-    assert_match("foo/bar.ex", ["**", "**/bar.ex"])
-    assert_match("foo/bar/baz", ["**", "**/baz"])
-    assert_match("foo/bar/baz.ex", ["**", "**/baz.ex"])
-
-    refute_match("foo/bar", ["**bar"])
-    refute_match("foo/bar.ex", ["**bar.ex"])
-    refute_match("foo/bar/baz", ["**baz"])
-    refute_match("foo/bar/baz.ex", ["**baz.ex"])
+  describe "** pattern" do
+    test_match("foo", "**")
+    test_match("foo", "**o")
+    test_match("foo", "**/foo")
+    test_match("foo", "**//foo")
+    test_match("foo.ex", "**")
+    test_match("foo.ex", "**o.ex")
+    test_match("foo.ex", "**/foo.ex")
+    test_match("foo.ex", "**//foo.ex")
+    test_match("foo/bar", "**")
+    test_match("foo/bar", "**/bar")
+    test_match("foo/bar.ex", "**")
+    test_match("foo/bar.ex", "**/bar.ex")
+    test_match("foo/bar/baz", "**")
+    test_match("foo/bar/baz", "**/baz")
+    test_match("foo/bar/baz.ex", "**")
+    test_match("foo/bar/baz.ex", "**/baz.ex")
+    test_no_match("foo/bar", "**bar")
+    test_no_match("foo/bar.ex", "**bar.ex")
+    test_no_match("foo/bar/baz", "**baz")
+    test_no_match("foo/bar/baz.ex", "**baz.ex")
   end
 
-  test "{} pattern" do
-    assert_match("foo", ["{foo}", "{foo,bar}", "{fo,ba}o", "{*o}", "{*o,*a}", "{f*,a*}"])
-    refute_match("foo", ["{bar}", "{bar,baz}", "{b}oo"])
-    assert_error("fo{o", ["fo{o"])
-    assert_error("fo{o{o}o}", ["fo{o{o}o}"])
-    assert_match("fo}o", ["fo}o", "fo}{o}", "{f}o}o"])
-    assert_match("fo,o", ["fo,o", "fo,{o}"])
-    assert_match("abcdef", ["a*{def,}", "a*{,def}"])
+  describe "{} pattern" do
+    test_match("foo", "{foo}")
+    test_match("foo", "{foo,bar}")
+    test_match("foo", "{fo,ba}o")
+    test_match("foo", "{*o}")
+    test_match("foo", "{*o,*a}")
+    test_match("foo", "{f*,a*}")
+    test_no_match("foo", "{bar}")
+    test_no_match("foo", "{bar,baz}")
+    test_no_match("foo", "{b}oo")
+    test_error("fo{o", "fo{o", ErlangError)
+    test_error("fo{o{o}o}", "fo{o{o}o}", CaseClauseError)
+    test_match("fo}o", "fo}o")
+    test_match("fo}o", "fo}{o}")
+    test_match("fo}o", "{f}o}o")
+    test_match("fo,o", "fo,o")
+    test_match("fo,o", "fo,{o}")
+    test_match("abcdef", "a*{def,}")
+    test_match("abcdef", "a*{,def}")
   end
 
-  test "[] pattern" do
-    assert_match("foo", ["f[o]o", "f[ao]o", "f[a-z]o", "f[o,a]o"])
-    refute_match("foo", ["f[a]o", "f[a-d]o", "f[a,b]o", "foo[]"])
-    assert_match("fo,o", ["fo,o", "fo,[o]"])
-    assert_match("fo[o", ["fo[o"])
-    assert_match("fo]o", ["fo]o"])
-    assert_match("foo123", ["foo[1]23", "foo[1-9]23", "foo[1-39]23"])
-    assert_match("foo923", ["foo[1-39]23"])
-    refute_match("foo123", ["foo[12]3", "foo[1-12]3", "foo[1-123]"])
-    assert_match("a-", ["a-", "a[-]", "a[A-C-]"])
-    assert_match("a[", ["a[", "a[[]", "a[a[]", "a[[a]", "a[a[b]"])
-    # assert_match("a]", ["a]", "a[]a]", "a[]]"])
-    refute_match("a]", ["a[a]b]", "a[a]]"])
-  end
-
-  defp assert_match(path, globs) do
-    within_tmpdir(path, fn ->
-      for glob <- globs do
-        assert path in Path.wildcard(glob),
-               "expected Path.wildcard(#{inspect(glob)}) to include '#{path}'"
-
-        assert PathGlob.match?(path, glob),
-               "expected '#{glob}' [compiled: #{inspect_compiled(glob)}] to match '#{path}'"
-      end
-    end)
-  end
-
-  defp refute_match(path, globs) do
-    within_tmpdir(path, fn ->
-      for glob <- globs do
-        assert path not in Path.wildcard(glob),
-               "expected Path.wildcard(#{inspect(glob)}) not to include '#{path}'"
-
-        refute PathGlob.match?(path, glob),
-               "expected '#{glob}' [compiled: #{inspect_compiled(glob)}] not to match '#{path}'"
-      end
-    end)
-  end
-
-  defp inspect_compiled(glob) do
-    glob
-    |> PathGlob.compile()
-    |> inspect()
-  end
-
-  defp assert_error(path, globs) do
-    for glob <- List.wrap(globs) do
-      try do
-        Path.wildcard(glob) == [path]
-      rescue
-        _ in [ErlangError, CaseClauseError] -> nil
-      else
-        _ -> raise "expected an error"
-      end
-
-      assert_raise(ArgumentError, fn -> PathGlob.match?(path, glob) end)
-    end
-  end
-
-  defp within_tmpdir(path, fun) do
-    tmpdir = Path.join(@tmpdir, Enum.take_random(?a..?z, 10))
-    File.mkdir_p!(tmpdir)
-
-    try do
-      File.cd!(tmpdir, fn ->
-        dir = Path.dirname(path)
-        unless dir == ".", do: File.mkdir_p!(dir)
-        File.write!(path, "")
-        fun.()
-      end)
-    after
-      File.rm_rf!(tmpdir)
-    end
+  describe "[] pattern" do
+    test_match("foo", "f[o]o")
+    test_match("foo", "f[ao]o")
+    test_match("foo", "f[a-z]o")
+    test_match("foo", "f[o,a]o")
+    test_no_match("foo", "f[a]o")
+    test_no_match("foo", "f[a-d]o")
+    test_no_match("foo", "f[a,b]o")
+    test_no_match("foo", "foo[]")
+    test_match("fo,o", "fo,o")
+    test_match("fo,o", "fo,[o]")
+    test_match("fo[o", "fo[o")
+    test_match("fo]o", "fo]o")
+    test_match("foo123", "foo[1]23")
+    test_match("foo123", "foo[1-9]23")
+    test_match("foo123", "foo[1-39]23")
+    test_match("foo923", "foo[1-39]23")
+    test_no_match("foo123", "foo[12]3")
+    test_no_match("foo123", "foo[1-12]3")
+    test_no_match("foo123", "foo[1-123]")
+    test_match("a-", "a-")
+    test_match("a-", "a[-]")
+    test_match("a-", "a[A-C-]")
+    test_match("a[", "a[")
+    test_match("a[", "a[[]")
+    test_match("a[", "a[a[]")
+    test_match("a[", "a[[a]")
+    test_match("a[", "a[a[b]")
+    test_match("a]", "a]")
+    # test_match("a]", "a[]a]")
+    # test_match("a]", "a[]]")
+    test_no_match("a]", "a[a]b]")
+    test_no_match("a]", "a[a]]")
   end
 end
