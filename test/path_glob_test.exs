@@ -224,4 +224,9 @@ defmodule PathGlobTest do
       refute PathGlob.match?(absolute("foo/bar"), "/**/foo")
     end
   end
+
+  test "compile/1" do
+    regex = PathGlob.compile("f[o]o")
+    assert String.match?("foo", regex)
+  end
 end
