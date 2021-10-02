@@ -103,6 +103,15 @@ defmodule PathGlobTest do
     test_match("fo,o", "fo,{o}")
     test_match("abcdef", "a*{def,}")
     test_match("abcdef", "a*{,def}")
+    @tag :pending
+    test_match("{abc}", ~S(\{a*))
+    @tag :pending
+    test_match("{abc}", ~S(\{abc}))
+    @tag :pending
+    test_match("@a,b", ~S(@{a\,b,c}))
+    test_match("@c", ~S(@{a\,b,c}))
+    @tag :pending
+    test_match("?q", ~S(\?q))
   end
 
   describe "[] pattern" do
@@ -141,6 +150,11 @@ defmodule PathGlobTest do
     test_no_match("a]", "a[a-z]]")
     test_no_match("a]", "a[a]b]")
     test_no_match("a]", "a[a]]")
+    test_match("---", "[a\\-z]*")
+    test_match("abc", "[a\\-z]*")
+    test_match("z--", "[a\\-z]*")
+    @tag :pending
+    test_no_match(~S(\a), ~S([a\-z]*))
   end
 
   describe "combinations" do
