@@ -38,10 +38,17 @@ defmodule PathGlob.Parser do
     |> replace(string(","), "|")
   end
 
+  defp alternatives_item(combinator \\ empty()) do
+    choice(combinator, [
+      times(non_alteratives([?}, ?,]), min: 1),
+      empty()
+    ])
+  end
+
   defp alternatives() do
     alternatives_open()
-    |> repeat(times(non_alteratives([?,]), min: 1) |> _or())
-    |> times(non_alteratives([?}]), min: 1)
+    |> repeat(alternatives_item() |> _or())
+    |> alternatives_item()
     |> alternatives_close()
   end
 

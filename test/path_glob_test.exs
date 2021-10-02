@@ -47,8 +47,9 @@ defmodule PathGlobTest do
     refute_match("foo", ["{bar}", "{bar,baz}", "{b}oo"])
     assert_error("fo{o", ["fo{o"])
     assert_error("fo{o{o}o}", ["fo{o{o}o}"])
-    assert_match("fo}o", ["fo}o", "fo}{o}"])
+    assert_match("fo}o", ["fo}o", "fo}{o}", "{f}o}o"])
     assert_match("fo,o", ["fo,o", "fo,{o}"])
+    assert_match("abcdef", ["a*{def,}", "a*{,def}"])
   end
 
   test "[] pattern" do
