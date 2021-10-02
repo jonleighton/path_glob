@@ -42,19 +42,21 @@ defmodule PathGlob do
           |> Regex.compile!()
 
         Logger.debug(
-          inspect(
-            %{
-              glob: glob,
-              regex: regex,
-              parse_tree: parse_tree
-            },
-            pretty: true
-          )
+          "PathGlob: " <>
+            inspect(
+              %{
+                glob: glob,
+                regex: regex,
+                parse_tree: parse_tree
+              },
+              pretty: true
+            )
         )
 
         regex
 
-      {:error, _error, _, _, _, _} ->
+      {:error, _, _, _, _, _} = error ->
+        Logger.debug("PathGlob: #{inspect(error)}")
         raise ArgumentError, "failed to parse '#{glob}'"
     end
   end
