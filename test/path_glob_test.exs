@@ -44,9 +44,13 @@ defmodule PathGlobTest do
     test_match("foo/bar", "foo/bar*")
     test_match("foo/bar", "foo/*bar")
     test_match("foo/bar", "*/bar")
+    test_match("foo/bar", "*/*")
+    test_match("foo/bar.ex", "foo/*.ex")
+    test_match("foo/bar.ex", "foo/*")
     test_no_match("foo", "b*")
     test_no_match("foo/bar", "foo/f*")
     test_no_match("foo/bar", "*ar")
+    test_no_match("foo/bar", "baz/*")
   end
 
   describe "** pattern" do
@@ -60,16 +64,24 @@ defmodule PathGlobTest do
     test_match("foo.ex", "**//foo.ex")
     test_match("foo/bar", "**")
     test_match("foo/bar", "**/bar")
+    test_match("foo/bar", "foo/**")
     test_match("foo/bar.ex", "**")
     test_match("foo/bar.ex", "**/bar.ex")
+    test_match("foo/bar.ex", "foo/**")
+    test_match("foo/bar.ex", "foo/**.ex")
     test_match("foo/bar/baz", "**")
     test_match("foo/bar/baz", "**/baz")
     test_match("foo/bar/baz.ex", "**")
     test_match("foo/bar/baz.ex", "**/baz.ex")
+    test_match("foo/bar/baz.ex", "**/bar/**")
+    test_match("foo/bar/baz.ex", "**/bar/**.ex")
     test_no_match("foo/bar", "**bar")
+    test_no_match("foo/bar", "foo**")
     test_no_match("foo/bar.ex", "**bar.ex")
     test_no_match("foo/bar/baz", "**baz")
     test_no_match("foo/bar/baz.ex", "**baz.ex")
+    test_no_match("foo/bar/baz.ex", "**/baz/**")
+    test_no_match("foo/bar/baz.ex", "**/baz/**.ex")
   end
 
   describe "{} pattern" do
@@ -116,6 +128,7 @@ defmodule PathGlobTest do
     test_match("a-", "a-")
     test_match("a-", "a[-]")
     test_match("a-", "a[A-C-]")
+    test_match("a-", "a[][A-C-]")
     test_match("a[", "a[")
     test_match("a[", "a[[]")
     test_match("a[", "a[a[]")
@@ -128,5 +141,11 @@ defmodule PathGlobTest do
     test_no_match("a]", "a[a-z]]")
     test_no_match("a]", "a[a]b]")
     test_no_match("a]", "a[a]]")
+  end
+
+  describe "combinations" do
+    test_match("foo/bar", "{foo,baz}/*")
+    test_match("foo/bar", "**/*")
+    test_match("foo/bar/baz", "**/*")
   end
 end
