@@ -164,7 +164,7 @@ defmodule PathGlob.Parser do
   end
 
   def glob do
-    repeat(term())
+    times(term(), min: 1)
     |> eos()
     |> tag(:glob)
   end

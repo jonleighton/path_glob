@@ -19,6 +19,7 @@ defmodule PathGlobTest do
     test_no_match(~S(fo\o), ~S(fo\\o))
     test_match("?q", ~S(\?q))
     test_match("fo{o", ~S(fo\{o))
+    test_error("foo", "", MatchError)
   end
 
   describe "? pattern" do
