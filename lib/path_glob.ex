@@ -77,7 +77,7 @@ defmodule PathGlob do
       {:character_range, [start, finish]} ->
         "[#{transform(start)}-#{transform(finish)}]"
 
-      {:character, items} ->
+      {:character_class_item, items} ->
         "(#{transform_join(items, "|")})"
     end
   end
