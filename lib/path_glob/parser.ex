@@ -108,13 +108,16 @@ defmodule PathGlob.Parser do
   end
 
   defp literal() do
-    times(
-      choice([
-        punctuation("\\") |> special_literal([]),
-        string_excluding(["\\" | @special_chars], min: 1) |> tag(:literal)
+    choice([
+      punctuation("\\")
+      |> choice([
+        punctuation("\\"),
+        ascii_string([], 1)
       ]),
-      min: 1
-    )
+      string_excluding(["\\" | @special_chars], min: 1)
+    ])
+    |> times(min: 1)
+    |> tag(:literal)
   end
 
   defp special_literal(combinator \\ empty(), exclude) do

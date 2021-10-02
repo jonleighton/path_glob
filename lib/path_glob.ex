@@ -72,8 +72,10 @@ defmodule PathGlob do
       {:glob, terms} ->
         "^#{transform_join(terms)}$"
 
-      {:literal, [string]} ->
-        Regex.escape(string)
+      {:literal, items} ->
+        items
+        |> Enum.join()
+        |> Regex.escape()
 
       {:question, _} ->
         "."

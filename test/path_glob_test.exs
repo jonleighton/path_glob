@@ -15,10 +15,10 @@ defmodule PathGlobTest do
     test_no_match("foo", "bar")
     test_no_match("foo", "fo")
     test_no_match("foo", "FOO")
-    @tag :pending
     test_no_match(~S(fo\o), ~S(fo\o))
-    @tag :pending
     test_no_match(~S(fo\o), ~S(fo\\o))
+    test_match("?q", ~S(\?q))
+    test_match("fo{o", ~S(fo\{o))
   end
 
   describe "? pattern" do
@@ -111,7 +111,8 @@ defmodule PathGlobTest do
     test_match("{abc}", ~S(\{abc}))
     test_match("@a,b", ~S(@{a\,b,c}))
     test_match("@c", ~S(@{a\,b,c}))
-    test_match("?q", ~S(\?q))
+    test_match("fo[o", ~S({fo\[o}))
+    test_match("fo[o", ~S({fo[o}))
   end
 
   describe "[] pattern" do
