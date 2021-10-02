@@ -54,12 +54,17 @@ defmodule PathGlobTest do
 
   test "[] pattern" do
     assert_match("foo", ["f[o]o", "f[ao]o", "f[a-z]o", "f[o,a]o"])
-    refute_match("foo", ["f[a]o", "f[a-d]o", "f[a,b]o"])
+    refute_match("foo", ["f[a]o", "f[a-d]o", "f[a,b]o", "foo[]"])
     assert_match("fo,o", ["fo,o", "fo,[o]"])
     assert_match("fo[o", ["fo[o"])
     assert_match("fo]o", ["fo]o"])
     assert_match("foo123", ["foo[1]23", "foo[1-9]23", "foo[1-39]23"])
+    assert_match("foo923", ["foo[1-39]23"])
     refute_match("foo123", ["foo[12]3", "foo[1-12]3", "foo[1-123]"])
+    assert_match("a-", ["a-", "a[-]", "a[A-C-]"])
+    assert_match("a[", ["a[", "a[[]", "a[a[]", "a[[a]", "a[a[b]"])
+    # assert_match("a]", ["a]", "a[]a]", "a[]]"])
+    refute_match("a]", ["a[a]b]", "a[a]]"])
   end
 
   defp assert_match(path, globs) do
