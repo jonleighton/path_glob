@@ -7,6 +7,9 @@ defmodule PathGlob do
   import PathGlob.Parser
   import NimbleParsec
 
+  require Logger
+  Logger.put_module_level(__MODULE__, :none)
+
   defparsecp(:parse, glob(), inline: true)
 
   @type path :: String.t()
@@ -32,10 +35,19 @@ defmodule PathGlob do
   @spec compile(glob()) :: Regex.t()
   def compile(glob) do
     case parse(glob) do
-      {:ok, [output], "", _, _, _} ->
-        output
-        |> transform()
-        |> Regex.compile!()
+      {:ok, [parse_tree], "", _, _, _} ->
+        regex =
+          parse_tree
+          |> transform()
+          |> Regex.compile!()
+
+        Logger.debug(%{
+          glob: glob,
+          regex: regex,
+          parse_tree: parse_tree
+        })
+
+        regex
 
       {:error, _error, _, _, _, _} ->
         raise ArgumentError, "failed to parse '#{glob}'"
