@@ -30,7 +30,7 @@ defmodule PathGlob.Parser do
 
   defp alternatives_item(combinator \\ empty()) do
     choice(combinator, [
-      times(non_alteratives([?}, ?,]), min: 1),
+      times(non_alteratives(~W(} ,)), min: 1),
       empty()
     ])
   end
@@ -45,7 +45,7 @@ defmodule PathGlob.Parser do
 
   defp character_item(combinator \\ empty(), exclude) do
     combinator
-    |> tag(utf8_string(map_exclude(exclude), 1), :literal)
+    |> tag(string_excluding(exclude, 1), :literal)
   end
 
   defp character_list(exclude) do
@@ -54,7 +54,7 @@ defmodule PathGlob.Parser do
   end
 
   defp character_range(exclude) do
-    exclude = [?- | exclude]
+    exclude = ["-" | exclude]
 
     character_item(exclude)
     |> punctuation("-")
@@ -75,8 +75,8 @@ defmodule PathGlob.Parser do
 
   defp character_class() do
     inner =
-      repeat(character_class_item([?,, ?]]) |> punctuation(","))
-      |> character_class_item([?]])
+      repeat(character_class_item(~W(, ])) |> punctuation(","))
+      |> character_class_item(~W(]))
 
     punctuation("[")
     |> choice([string("]") |> tag(:literal) |> optional(inner), inner])
@@ -84,22 +84,28 @@ defmodule PathGlob.Parser do
     |> tag(:character_class)
   end
 
-  @special_chars [??, ?*, ?{, ?}, ?[, ?], ?,]
+  @special_chars ~W(? * { } [ ] ,)
 
-  defp map_exclude(chars) do
-    Enum.map(chars, &{:not, &1})
+  defp string_excluding(chars, range) do
+    chars
+    |> to_codepoints()
+    |> Enum.map(&{:not, &1})
+    |> ascii_string(range)
+  end
+
+  defp to_codepoints(chars) do
+    Enum.map(chars, fn <<char>> -> char end)
   end
 
   defp literal() do
-    @special_chars
-    |> map_exclude()
-    |> utf8_string(min: 1)
+    string_excluding(@special_chars, min: 1)
     |> tag(:literal)
   end
 
   defp special_literal(exclude) do
     (@special_chars -- exclude)
-    |> utf8_string(1)
+    |> to_codepoints()
+    |> ascii_string(1)
     |> tag(:literal)
   end
 
@@ -119,7 +125,7 @@ defmodule PathGlob.Parser do
       star(),
       character_class(),
       literal(),
-      special_literal([?{ | exclude])
+      special_literal(["{" | exclude])
     ])
   end
 
