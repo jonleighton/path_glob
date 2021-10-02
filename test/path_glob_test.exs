@@ -174,6 +174,7 @@ defmodule PathGlobTest do
         assert_match("foo/bar/..", "foo/bar/..")
         assert_match("foo/bar/..", "foo/bar/../")
         assert_match("foo/bar/..", "foo/bar/..//")
+        assert_match("foo/bar/../bar", "foo/bar/../bar")
       end)
     end
 
@@ -189,6 +190,8 @@ defmodule PathGlobTest do
       within_tmpdir("foo/bar/baz", fn ->
         assert_match("foo/bar/../.", "foo/bar/../.")
         assert_match("foo/bar/../.", "foo/bar/..//.")
+        assert_match("foo/bar", "foo/./bar")
+        assert_match("foo/bar/.", "foo/./bar/.")
       end)
     end
 
