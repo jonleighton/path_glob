@@ -5,7 +5,7 @@ defmodule PathGlob do
   """
 
   import PathGlob.Parser
-  import NimbleParsec
+  import NimbleParsec, only: [defparsecp: 3]
 
   require Logger
   Logger.put_module_level(__MODULE__, :none)
@@ -86,7 +86,7 @@ defmodule PathGlob do
         "[^/]*"
 
       {:alternatives, items} ->
-        "(#{transform_join(items, "|")})"
+        choice(items)
 
       {:character_list, items} ->
         transform_join(items, "|")
@@ -94,8 +94,12 @@ defmodule PathGlob do
       {:character_range, [start, finish]} ->
         "[#{transform(start)}-#{transform(finish)}]"
 
-      {:character_class_item, items} ->
-        "(#{transform_join(items, "|")})"
+      {:character_class, items} ->
+        choice(items)
     end
+  end
+
+  defp choice(items) do
+    "(#{transform_join(items, "|")})"
   end
 end

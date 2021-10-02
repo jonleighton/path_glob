@@ -63,15 +63,14 @@ defmodule PathGlob.Parser do
   end
 
   defp character_class_item(combinator \\ empty(), exclude) do
-    combinator
-    |> times(
+    times(
+      combinator,
       choice([
         character_range(exclude),
         character_list(exclude)
       ]),
       min: 1
     )
-    |> tag(:character_class_item)
   end
 
   defp character_class() do
@@ -79,6 +78,7 @@ defmodule PathGlob.Parser do
     |> repeat(character_class_item([?,, ?]]) |> punctuation(","))
     |> character_class_item([?]])
     |> punctuation("]")
+    |> tag(:character_class)
   end
 
   @special_chars [??, ?*, ?{, ?}, ?[, ?], ?,]
