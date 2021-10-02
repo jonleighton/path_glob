@@ -167,6 +167,23 @@ defmodule PathGlobTest do
     test_match("foo/bar/baz", "**/*")
   end
 
+  describe "directory traversal" do
+    test "basic" do
+      within_tmpdir("foo/bar/baz", fn ->
+        assert_match("foo/bar/..", "foo/bar/..")
+        assert_match("foo/bar/..", "foo/bar/../")
+        assert_match("foo/bar/..", "foo/bar/..//")
+      end)
+    end
+
+    test "** pattern" do
+      within_tmpdir("foo/bar/baz", fn ->
+        assert "foo/bar/../bar" in Path.wildcard("foo/bar/../*")
+        assert PathGlob.match?("foo/bar/../bar", "foo/bar/../*")
+      end)
+    end
+  end
+
   describe "absolute paths" do
     defp absolute(path) do
       Path.join(File.cwd!(), path)

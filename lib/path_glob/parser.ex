@@ -23,6 +23,15 @@ defmodule PathGlob.Parser do
     |> tag(:double_star)
   end
 
+  defp double_dot() do
+    string("..")
+    |> choice([
+      repeat(string("/")) |> lookahead_not(eos()),
+      repeat(punctuation("/")) |> lookahead(eos())
+    ])
+    |> tag(:literal)
+  end
+
   defp star() do
     string("*")
     |> tag(:star)
@@ -94,7 +103,7 @@ defmodule PathGlob.Parser do
     |> tag(:character_class)
   end
 
-  @special_chars ~W(? * { } [ ] ,)
+  @special_chars ~W(? * { } [ ] , /)
 
   defp string_excluding(chars, range) do
     chars
@@ -139,6 +148,7 @@ defmodule PathGlob.Parser do
       question(),
       double_star_slash(),
       double_star(),
+      double_dot(),
       star(),
       character_class(),
       literal(),
