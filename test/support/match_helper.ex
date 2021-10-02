@@ -6,7 +6,9 @@ defmodule PathGlob.MatchHelper do
   defmacro test_match(path, glob) do
     quote do
       test "glob '#{unquote(glob)}' matches path '#{unquote(path)}'" do
-        assert_match(unquote(path), unquote(glob))
+        within_tmpdir(unquote(path), fn ->
+          assert_match(unquote(path), unquote(glob))
+        end)
       end
     end
   end
@@ -14,7 +16,9 @@ defmodule PathGlob.MatchHelper do
   defmacro test_no_match(path, glob) do
     quote do
       test "glob '#{unquote(glob)}' doesn't match path '#{unquote(path)}'" do
-        refute_match(unquote(path), unquote(glob))
+        within_tmpdir(unquote(path), fn ->
+          refute_match(unquote(path), unquote(glob))
+        end)
       end
     end
   end
@@ -28,23 +32,19 @@ defmodule PathGlob.MatchHelper do
   end
 
   def assert_match(path, glob) do
-    within_tmpdir(path, fn ->
-      assert path in Path.wildcard(glob),
-             "expected Path.wildcard(#{inspect(glob)}) to include '#{path}'"
+    assert path in Path.wildcard(glob),
+           "expected Path.wildcard(#{inspect(glob)}) to include '#{path}'"
 
-      assert PathGlob.match?(path, glob),
-             "expected '#{glob}' to match '#{path}'"
-    end)
+    assert PathGlob.match?(path, glob),
+           "expected '#{glob}' to match '#{path}'"
   end
 
   def refute_match(path, glob) do
-    within_tmpdir(path, fn ->
-      assert path not in Path.wildcard(glob),
-             "expected Path.wildcard(#{inspect(glob)}) not to include '#{path}'"
+    assert path not in Path.wildcard(glob),
+           "expected Path.wildcard(#{inspect(glob)}) not to include '#{path}'"
 
-      refute PathGlob.match?(path, glob),
-             "expected '#{glob}' not to match '#{path}'"
-    end)
+    refute PathGlob.match?(path, glob),
+           "expected '#{glob}' not to match '#{path}'"
   end
 
   def assert_error(path, glob, wildcard_exception) do
@@ -59,7 +59,7 @@ defmodule PathGlob.MatchHelper do
     assert_raise(ArgumentError, fn -> PathGlob.match?(path, glob) end)
   end
 
-  defp within_tmpdir(path, fun) do
+  def within_tmpdir(path, fun) do
     tmpdir = Path.join(@tmpdir, Enum.take_random(?a..?z, 10))
     File.mkdir_p!(tmpdir)
 
