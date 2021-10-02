@@ -1,66 +1,66 @@
 defmodule PathGlob.Parser do
   import NimbleParsec
 
-  def question() do
+  defp question() do
     string("?")
     |> replace(".")
   end
 
-  def double_star_slash() do
+  defp double_star_slash() do
     string("**/")
     |> repeat(string("/"))
     |> replace("([^/]+/)*")
   end
 
-  def double_star() do
+  defp double_star() do
     string("**")
     |> repeat(string("/"))
     |> replace("([^/]+/)*[^/]+")
   end
 
-  def star() do
+  defp star() do
     string("*")
     |> replace("[^/]*")
   end
 
-  def alternatives_open() do
+  defp alternatives_open() do
     string("{")
     |> replace("(")
   end
 
-  def alternatives_close(combinator) do
+  defp alternatives_close(combinator) do
     combinator
     |> replace(string("}"), ")")
   end
 
-  def _or(combinator) do
+  defp _or(combinator) do
     combinator
     |> replace(string(","), "|")
   end
 
-  def alternatives() do
+  defp alternatives() do
     alternatives_open()
     |> repeat(times(non_alteratives([?,]), min: 1) |> _or())
     |> times(non_alteratives([?}]), min: 1)
     |> alternatives_close()
   end
 
-  def characters_open() do
+  defp characters_open() do
     string("[")
     |> replace("(")
   end
 
-  def characters_close(combinator) do
+  defp characters_close(combinator) do
     combinator
     |> replace(string("]"), ")")
   end
 
-  def character_item(combinator \\ empty(), exclude) do
+  defp character_item(combinator \\ empty(), exclude) do
     combinator
     |> map(utf8_string(map_exclude(exclude), 1), :escape)
   end
 
-  def character_list(exclude) do
+  defp character_list(exclude) do
     character_item(exclude)
     |> repeat(
       empty()
@@ -69,7 +69,7 @@ defmodule PathGlob.Parser do
     )
   end
 
-  def character_range(exclude) do
+  defp character_range(exclude) do
     replace(empty(), "[")
     |> character_item(exclude)
     |> string("-")
@@ -77,14 +77,14 @@ defmodule PathGlob.Parser do
     |> replace(empty(), "]")
   end
 
-  def character(combinator \\ empty(), exclude) do
+  defp character(combinator \\ empty(), exclude) do
     choice(combinator, [
       character_range(exclude),
       character_list(exclude)
     ])
   end
 
-  def characters() do
+  defp characters() do
     characters_open()
     |> repeat(character([?,, ?]]) |> _or())
     |> character([?]])
@@ -93,32 +93,32 @@ defmodule PathGlob.Parser do
 
   @special_chars [??, ?*, ?{, ?}, ?[, ?], ?,]
 
-  def map_exclude(chars) do
+  defp map_exclude(chars) do
     Enum.map(chars, &{:not, &1})
   end
 
-  def literal() do
+  defp literal() do
     @special_chars
     |> map_exclude()
     |> utf8_string(min: 1)
     |> map(:escape)
   end
 
-  def special_literal(exclude) do
+  defp special_literal(exclude) do
     (@special_chars -- exclude)
     |> utf8_string(1)
     |> map(:escape)
   end
 
-  def non_alteratives() do
+  defp non_alteratives() do
     non_alteratives([])
   end
 
-  def non_alteratives(exclude) do
+  defp non_alteratives(exclude) do
     non_alteratives(empty(), exclude)
   end
 
-  def non_alteratives(combinator, exclude) do
+  defp non_alteratives(combinator, exclude) do
     choice(combinator, [
       question(),
       double_star_slash(),
@@ -130,20 +130,20 @@ defmodule PathGlob.Parser do
     ])
   end
 
-  def term() do
+  defp term() do
     choice([
       alternatives(),
       non_alteratives()
     ])
   end
 
+  def escape(string) do
+    Regex.escape(string)
+  end
+
   def glob do
     replace(empty(), "^")
     |> repeat(term())
     |> replace(eos(), "$")
-  end
-
-  def escape(string) do
-    Regex.escape(string)
   end
 end
