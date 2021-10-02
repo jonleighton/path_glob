@@ -32,13 +32,53 @@ defmodule PathGlob do
   @spec compile(glob()) :: Regex.t()
   def compile(glob) do
     case parse(glob) do
-      {:ok, parts, "", _, _, _} ->
-        parts
-        |> Enum.join()
+      {:ok, [output], "", _, _, _} ->
+        output
+        |> transform()
         |> Regex.compile!()
 
       {:error, _error, _, _, _, _} ->
         raise ArgumentError, "failed to parse '#{glob}'"
+    end
+  end
+
+  defp transform_join(list, joiner \\ "") when is_list(list) do
+    list
+    |> Enum.map(&transform/1)
+    |> Enum.join(joiner)
+  end
+
+  defp transform(token) do
+    case token do
+      {:glob, terms} ->
+        "^#{transform_join(terms)}$"
+
+      {:literal, [string]} ->
+        Regex.escape(string)
+
+      {:question, _} ->
+        "."
+
+      {:double_star_slash, _} ->
+        "([^/]+/)*"
+
+      {:double_star, _} ->
+        "([^/]+/)*[^/]+"
+
+      {:star, _} ->
+        "[^/]*"
+
+      {:alternatives, items} ->
+        "(#{transform_join(items, "|")})"
+
+      {:character_list, items} ->
+        transform_join(items, "|")
+
+      {:character_range, [start, finish]} ->
+        "[#{transform(start)}-#{transform(finish)}]"
+
+      {:character, items} ->
+        "(#{transform_join(items, "|")})"
     end
   end
 end

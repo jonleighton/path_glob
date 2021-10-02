@@ -3,39 +3,24 @@ defmodule PathGlob.Parser do
 
   defp question() do
     string("?")
-    |> replace(".")
+    |> tag(:question)
   end
 
   defp double_star_slash() do
     string("**/")
     |> repeat(string("/"))
-    |> replace("([^/]+/)*")
+    |> tag(:double_star_slash)
   end
 
   defp double_star() do
     string("**")
     |> repeat(string("/"))
-    |> replace("([^/]+/)*[^/]+")
+    |> tag(:double_star)
   end
 
   defp star() do
     string("*")
-    |> replace("[^/]*")
-  end
-
-  defp alternatives_open() do
-    string("{")
-    |> replace("(")
-  end
-
-  defp alternatives_close(combinator) do
-    combinator
-    |> replace(string("}"), ")")
-  end
-
-  defp _or(combinator) do
-    combinator
-    |> replace(string(","), "|")
+    |> tag(:star)
   end
 
   defp alternatives_item(combinator \\ empty()) do
@@ -46,64 +31,49 @@ defmodule PathGlob.Parser do
   end
 
   defp alternatives() do
-    alternatives_open()
-    |> repeat(alternatives_item() |> _or())
+    ignore(string("{"))
+    |> repeat(alternatives_item() |> ignore(string(",")))
     |> alternatives_item()
-    |> alternatives_close()
-  end
-
-  defp characters_open() do
-    string("[")
-    |> replace("(")
-  end
-
-  defp characters_close(combinator) do
-    combinator
-    |> replace(string("]"), ")")
+    |> ignore(string("}"))
+    |> tag(:alternatives)
   end
 
   defp character_item(combinator \\ empty(), exclude) do
     combinator
-    |> map(utf8_string(map_exclude(exclude), 1), :escape)
+    |> tag(utf8_string(map_exclude(exclude), 1), :literal)
   end
 
   defp character_list(exclude) do
-    character_item(exclude)
-    |> repeat(
-      empty()
-      |> replace("|")
-      |> character_item(exclude)
-    )
+    times(character_item(exclude), min: 1)
+    |> tag(:character_list)
   end
 
   defp character_range(exclude) do
     exclude = [?- | exclude]
 
-    replace(empty(), "[")
+    character_item(exclude)
+    |> ignore(string("-"))
     |> character_item(exclude)
-    |> string("-")
-    |> character_item(exclude)
-    |> replace(empty(), "]")
+    |> tag(:character_range)
   end
 
   defp character(combinator \\ empty(), exclude) do
-    choices = [
-      character_range(exclude),
-      character_list(exclude)
-    ]
-
     combinator
-    |> replace(empty(), "(")
-    |> choice(choices)
-    |> repeat(replace(empty(), "|") |> choice(choices))
-    |> replace(empty(), ")")
+    |> times(
+      choice([
+        character_range(exclude),
+        character_list(exclude)
+      ]),
+      min: 1
+    )
+    |> tag(:character)
   end
 
   defp characters() do
-    characters_open()
-    |> repeat(character([?,, ?]]) |> _or())
+    ignore(string("["))
+    |> repeat(character([?,, ?]]) |> ignore(string(",")))
     |> character([?]])
-    |> characters_close()
+    |> ignore(string("]"))
   end
 
   @special_chars [??, ?*, ?{, ?}, ?[, ?], ?,]
@@ -116,13 +86,13 @@ defmodule PathGlob.Parser do
     @special_chars
     |> map_exclude()
     |> utf8_string(min: 1)
-    |> map(:escape)
+    |> tag(:literal)
   end
 
   defp special_literal(exclude) do
     (@special_chars -- exclude)
     |> utf8_string(1)
-    |> map(:escape)
+    |> tag(:literal)
   end
 
   defp non_alteratives() do
@@ -152,13 +122,9 @@ defmodule PathGlob.Parser do
     ])
   end
 
-  def escape(string) do
-    Regex.escape(string)
-  end
-
   def glob do
-    replace(empty(), "^")
-    |> repeat(term())
-    |> replace(eos(), "$")
+    repeat(term())
+    |> eos()
+    |> tag(:glob)
   end
 end
