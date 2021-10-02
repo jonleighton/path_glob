@@ -98,14 +98,18 @@ defmodule PathGlob.Parser do
   end
 
   defp literal() do
-    string_excluding(@special_chars, min: 1)
-    |> tag(:literal)
+    times(
+      choice([
+        ignore(string("\\")) |> special_literal([]),
+        string_excluding(@special_chars, min: 1) |> tag(:literal)
+      ]),
+      min: 1
+    )
   end
 
-  defp special_literal(exclude) do
-    (@special_chars -- exclude)
-    |> to_codepoints()
-    |> ascii_string(1)
+  defp special_literal(combinator \\ empty(), exclude) do
+    combinator
+    |> ascii_string(to_codepoints(@special_chars -- exclude), 1)
     |> tag(:literal)
   end
 

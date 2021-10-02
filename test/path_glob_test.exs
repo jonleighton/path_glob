@@ -103,14 +103,11 @@ defmodule PathGlobTest do
     test_match("fo,o", "fo,{o}")
     test_match("abcdef", "a*{def,}")
     test_match("abcdef", "a*{,def}")
-    @tag :pending
     test_match("{abc}", ~S(\{a*))
-    @tag :pending
     test_match("{abc}", ~S(\{abc}))
     @tag :pending
     test_match("@a,b", ~S(@{a\,b,c}))
     test_match("@c", ~S(@{a\,b,c}))
-    @tag :pending
     test_match("?q", ~S(\?q))
   end
 
