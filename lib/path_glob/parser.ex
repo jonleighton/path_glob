@@ -47,22 +47,28 @@ defmodule PathGlob.Parser do
     |> tag(:alternatives)
   end
 
-  defp character_item(combinator \\ empty(), exclude) do
+  defp character(combinator \\ empty(), exclude) do
     combinator
-    |> tag(string_excluding(exclude, 1), :literal)
+    |> tag(
+      choice([
+        punctuation("\\") |> string("-"),
+        string_excluding(exclude, 1)
+      ]),
+      :literal
+    )
   end
 
   defp character_list(exclude) do
-    times(character_item(exclude), min: 1)
+    times(character(exclude), min: 1)
     |> tag(:character_list)
   end
 
   defp character_range(exclude) do
     exclude = ["-" | exclude]
 
-    character_item(exclude)
+    character(exclude)
     |> punctuation("-")
-    |> character_item(exclude)
+    |> character(exclude)
     |> tag(:character_range)
   end
 
@@ -104,7 +110,7 @@ defmodule PathGlob.Parser do
   defp literal() do
     times(
       choice([
-        ignore(string("\\")) |> special_literal([]),
+        punctuation("\\") |> special_literal([]),
         string_excluding(["\\" | @special_chars], min: 1) |> tag(:literal)
       ]),
       min: 1

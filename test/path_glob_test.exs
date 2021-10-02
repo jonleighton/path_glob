@@ -153,7 +153,10 @@ defmodule PathGlobTest do
     test_match("---", ~S([a\-z]*))
     test_match("abc", ~S([a\-z]*))
     test_match("z--", ~S([a\-z]*))
-    @tag :pending
+    test_match("fo{o", ~S(fo[{]o))
+    test_match("fo{o", ~S(fo[\{]o))
+    test_no_match("fo\o", ~S(fo[\\{]o))
+    test_no_match("fo\o", ~S(fo[\{]o))
     test_no_match(~S(\a), ~S([a\-z]*))
   end
 
