@@ -74,9 +74,12 @@ defmodule PathGlob.Parser do
   end
 
   defp character_class() do
+    inner =
+      repeat(character_class_item([?,, ?]]) |> punctuation(","))
+      |> character_class_item([?]])
+
     punctuation("[")
-    |> repeat(character_class_item([?,, ?]]) |> punctuation(","))
-    |> character_class_item([?]])
+    |> choice([string("]") |> tag(:literal) |> optional(inner), inner])
     |> punctuation("]")
     |> tag(:character_class)
   end

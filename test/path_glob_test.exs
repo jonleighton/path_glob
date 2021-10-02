@@ -122,8 +122,10 @@ defmodule PathGlobTest do
     test_match("a[", "a[[a]")
     test_match("a[", "a[a[b]")
     test_match("a]", "a]")
-    # test_match("a]", "a[]a]")
-    # test_match("a]", "a[]]")
+    test_match("a]", "a[]a]")
+    test_match("a]", "a[]]")
+    test_no_match("a]", "a[b,]a]")
+    test_no_match("a]", "a[a-z]]")
     test_no_match("a]", "a[a]b]")
     test_no_match("a]", "a[a]]")
   end
