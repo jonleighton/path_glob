@@ -65,7 +65,8 @@ defmodule PathGlobTest do
   defp assert_match(path, globs) do
     within_tmpdir(path, fn ->
       for glob <- globs do
-        assert path in Path.wildcard(glob)
+        assert path in Path.wildcard(glob),
+               "expected Path.wildcard(#{inspect(glob)}) to include '#{path}'"
 
         assert PathGlob.match?(path, glob),
                "expected '#{glob}' [compiled: #{inspect_compiled(glob)}] to match '#{path}'"
@@ -76,7 +77,8 @@ defmodule PathGlobTest do
   defp refute_match(path, globs) do
     within_tmpdir(path, fn ->
       for glob <- globs do
-        assert Path.wildcard(glob) == []
+        assert path not in Path.wildcard(glob),
+               "expected Path.wildcard(#{inspect(glob)}) not to include '#{path}'"
 
         refute PathGlob.match?(path, glob),
                "expected '#{glob}' [compiled: #{inspect_compiled(glob)}] not to match '#{path}'"
