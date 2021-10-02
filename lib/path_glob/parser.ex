@@ -29,10 +29,14 @@ defmodule PathGlob.Parser do
   end
 
   defp alternatives_item(combinator \\ empty()) do
-    choice(combinator, [
-      times(non_alteratives(~W(} ,)), min: 1),
-      empty()
-    ])
+    combinator
+    |> tag(
+      choice([
+        times(non_alteratives(~W(} ,)), min: 1),
+        empty()
+      ]),
+      :alternatives_item
+    )
   end
 
   defp alternatives() do
@@ -101,7 +105,7 @@ defmodule PathGlob.Parser do
     times(
       choice([
         ignore(string("\\")) |> special_literal([]),
-        string_excluding(@special_chars, min: 1) |> tag(:literal)
+        string_excluding(["\\" | @special_chars], min: 1) |> tag(:literal)
       ]),
       min: 1
     )

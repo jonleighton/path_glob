@@ -90,6 +90,9 @@ defmodule PathGlob do
       {:alternatives, items} ->
         choice(items)
 
+      {:alternatives_item, items} ->
+        transform_join(items)
+
       {:character_list, items} ->
         transform_join(items, "|")
 
