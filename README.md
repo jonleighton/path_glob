@@ -1,6 +1,6 @@
 # PathGlob
 
-[![Actions Status](https://github.com/jonleighton/path_glob/workflows/elixir/badge.svg)](https://github.com/jonleighton/elixir/actions)
+[![Actions Status](https://github.com/jonleighton/path_glob/actions/workflows/elixir.yml/badge.svg)](https://github.com/jonleighton/elixir/actions)
 [![Module Version](https://img.shields.io/hexpm/v/path_glob.svg)](https://hex.pm/packages/path_glob)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/path_glob/)
 
