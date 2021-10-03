@@ -3,21 +3,21 @@ defmodule PathGlob.MatchHelper do
 
   import ExUnit.Assertions
 
-  defmacro test_match(path, glob) do
+  defmacro test_match(path, glob, opts \\ []) do
     quote do
       test "glob '#{unquote(glob)}' matches path '#{unquote(path)}'" do
         within_tmpdir(unquote(path), fn ->
-          assert_match(unquote(path), unquote(glob))
+          assert_match(unquote(path), unquote(glob), unquote(opts))
         end)
       end
     end
   end
 
-  defmacro test_no_match(path, glob) do
+  defmacro test_no_match(path, glob, opts \\ []) do
     quote do
       test "glob '#{unquote(glob)}' doesn't match path '#{unquote(path)}'" do
         within_tmpdir(unquote(path), fn ->
-          refute_match(unquote(path), unquote(glob))
+          refute_match(unquote(path), unquote(glob), unquote(opts))
         end)
       end
     end
@@ -31,20 +31,24 @@ defmodule PathGlob.MatchHelper do
     end
   end
 
-  def assert_match(path, glob) do
-    assert path in Path.wildcard(glob),
-           "expected Path.wildcard(#{inspect(glob)}) to include '#{path}'"
+  def assert_match(path, glob, opts \\ []) do
+    assert path in Path.wildcard(glob, opts),
+           "expected #{wildcard_call(glob, opts)} to include '#{path}'"
 
-    assert PathGlob.match?(path, glob),
+    assert PathGlob.match?(path, glob, opts),
            "expected '#{glob}' to match '#{path}'"
   end
 
-  def refute_match(path, glob) do
-    assert path not in Path.wildcard(glob),
-           "expected Path.wildcard(#{inspect(glob)}) not to include '#{path}'"
+  def refute_match(path, glob, opts \\ []) do
+    assert path not in Path.wildcard(glob, opts),
+           "expected #{wildcard_call(glob, opts)} not to include '#{path}'"
 
-    refute PathGlob.match?(path, glob),
+    refute PathGlob.match?(path, glob, opts),
            "expected '#{glob}' not to match '#{path}'"
+  end
+
+  defp wildcard_call(glob, opts) do
+    "Path.wildcard(#{inspect(glob)}, #{inspect(opts)})"
   end
 
   def assert_error(path, glob, wildcard_exception) do

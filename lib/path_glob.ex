@@ -26,10 +26,13 @@ defmodule PathGlob do
 
       iex> PathGlob.match?("lib/path_glob.ex", "{lib,test}/path_*.ex")
       true
+
+      iex> PathGlob.match?("lib/.formatter.exs", "lib/*", match_dot: true)
+      true
   """
-  @spec match?(path(), glob()) :: boolean()
-  def match?(path, glob) do
-    String.match?(path, compile(glob))
+  @spec match?(path(), glob(), match_dot: boolean()) :: boolean()
+  def match?(path, glob, opts \\ []) do
+    String.match?(path, compile(glob, opts))
   end
 
   @doc """
@@ -39,16 +42,19 @@ defmodule PathGlob do
 
   ## Examples
 
-      iex> PathGlob.compile("{lib,test}/path_*.ex")
+      iex> PathGlob.compile("{lib,test}/*")
+      ~r{^(lib|test)/([^\\./]|(?<=[^/])\\.)*$}
+
+      iex> PathGlob.compile("{lib,test}/path_*.ex", match_dot: true)
       ~r{^(lib|test)/path_[^/]*\\.ex$}
   """
-  @spec compile(glob()) :: Regex.t()
-  def compile(glob) do
+  @spec compile(glob(), match_dot: boolean()) :: Regex.t()
+  def compile(glob, opts \\ []) do
     case parse(glob) do
       {:ok, [parse_tree], "", _, _, _} ->
         regex =
           parse_tree
-          |> transform()
+          |> transform(Keyword.get(opts, :match_dot, false))
           |> Regex.compile!()
 
         Logger.debug(
@@ -71,16 +77,16 @@ defmodule PathGlob do
     end
   end
 
-  defp transform_join(list, joiner \\ "") when is_list(list) do
+  defp transform_join(list, match_dot?, joiner \\ "") when is_list(list) do
     list
-    |> Enum.map(&transform/1)
+    |> Enum.map(&transform(&1, match_dot?))
     |> Enum.join(joiner)
   end
 
-  defp transform(token) do
+  defp transform(token, match_dot?) do
     case token do
       {:glob, terms} ->
-        "^#{transform_join(terms)}$"
+        "^#{transform_join(terms, match_dot?)}$"
 
       {:literal, items} ->
         items
@@ -88,35 +94,49 @@ defmodule PathGlob do
         |> Regex.escape()
 
       {:question, _} ->
-        "."
+        any_single(match_dot?)
 
       {:double_star_slash, _} ->
-        "([^/]+/)*"
+        pattern = "(#{any_single(match_dot?)}+/)*"
+
+        if match_dot? do
+          pattern
+        else
+          "#{pattern}(?!\\.)"
+        end
 
       {:double_star, _} ->
-        "([^/]+/)*[^/]+"
+        "(#{any_single(match_dot?)}+/)*#{any_single(match_dot?)}+"
 
       {:star, _} ->
-        "[^/]*"
+        "#{any_single(match_dot?)}*"
 
       {:alternatives, items} ->
-        choice(items)
+        choice(items, match_dot?)
 
       {:alternatives_item, items} ->
-        transform_join(items)
+        transform_join(items, match_dot?)
 
       {:character_list, items} ->
-        transform_join(items, "|")
+        transform_join(items, match_dot?, "|")
 
       {:character_range, [start, finish]} ->
-        "[#{transform(start)}-#{transform(finish)}]"
+        "[#{transform(start, match_dot?)}-#{transform(finish, match_dot?)}]"
 
       {:character_class, items} ->
-        choice(items)
+        choice(items, match_dot?)
     end
   end
 
-  defp choice(items) do
-    "(#{transform_join(items, "|")})"
+  defp any_single(match_dot?) do
+    if match_dot? do
+      "[^/]"
+    else
+      "([^\\./]|(?<=[^/])\\.)"
+    end
+  end
+
+  defp choice(items, match_dot?) do
+    "(#{transform_join(items, match_dot?, "|")})"
   end
 end

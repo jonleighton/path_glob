@@ -32,6 +32,7 @@ defmodule PathGlobTest do
     test_match("foo", "f?o")
     test_match("foo", "f??")
     test_match("foo", "???")
+    test_no_match("foo/bar", "foo?bar")
     test_no_match("foo", "foo?")
     test_no_match("foo", "f?oo")
   end
@@ -171,6 +172,38 @@ defmodule PathGlobTest do
     test_match("foo/bar", "{foo,baz}/*")
     test_match("foo/bar", "**/*")
     test_match("foo/bar/baz", "**/*")
+  end
+
+  describe "match_dot: true" do
+    test_match(".foo", "*", match_dot: true)
+    test_match(".foo", "?foo", match_dot: true)
+    test_match(".foo", "**", match_dot: true)
+    test_match("foo/.bar", "foo/*", match_dot: true)
+    test_match("foo/.bar", "foo/?bar", match_dot: true)
+    test_match("foo/.bar", "**", match_dot: true)
+    test_match("foo/.bar", "foo/**", match_dot: true)
+    test_match("foo/.bar", "**/.bar", match_dot: true)
+    test_no_match("foo/.bar", "foo?.bar", match_dot: true)
+    test_match("foo/.bar/baz", "foo/*/baz", match_dot: true)
+    test_match("foo/.bar/baz", "foo/?bar/baz", match_dot: true)
+    test_match("foo/.bar/baz", "**/baz", match_dot: true)
+    test_match("foo/.bar/baz", "foo/**/baz", match_dot: true)
+  end
+
+  describe "match_dot: false" do
+    # Explicit test for default option value
+    test_no_match("foo/.foo", "foo/*")
+
+    test_no_match(".foo", "*", match_dot: false)
+    test_no_match(".foo", "?foo", match_dot: false)
+    test_no_match("foo/.bar", "foo/*", match_dot: false)
+    test_no_match("foo/.bar", "foo/?bar", match_dot: false)
+    test_match(".foo", ".foo", match_dot: false)
+    test_no_match("foo/.foo", "**/.foo", match_dot: false)
+    test_no_match("foo/.bar/baz", "foo/*/baz", match_dot: false)
+    test_no_match("foo/.bar/baz", "foo/?bar/baz", match_dot: false)
+    test_no_match("foo/.bar/baz", "**/baz", match_dot: false)
+    test_no_match("foo/.bar/baz", "foo/**/baz", match_dot: false)
   end
 
   describe "directory traversal" do

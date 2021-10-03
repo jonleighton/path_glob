@@ -9,10 +9,10 @@ you only want to know whether a _particular_ path matches a glob, then
 `Path.wildcard/2` can be slow (depending on the glob), because it needs to
 traverse the filesystem.
 
-`PathGlob` provides a `PathGlob.match?/2` function to check a path against a
+`PathGlob` provides a `PathGlob.match?/3` function to check a path against a
 glob without touching the filesystem. Internally, the glob pattern is compiled
 to a `Regex` and then checked via `String.match?/2`. If you want to compile the
-glob pattern ahead-of-time, you can use `PathGlob.compile/1`.
+glob pattern ahead-of-time, you can use `PathGlob.compile/2`.
 
 ## Compatibility
 
@@ -21,7 +21,7 @@ bugs and all. Internally, `Path.wildcard/2` is implemented via Erlang’s
 [`filelib:wildcard/2`](http://erlang.org/doc/man/filelib.html#wildcard-1).
 
 There is an extensive test suite, and every assertion is checked against both
-`Path.wildcard/2` and `PathGlob.match?/2` to ensure compatibility.
+`Path.wildcard/2` and `PathGlob.match?/3` to ensure compatibility.
 
 ## Caveats
 
