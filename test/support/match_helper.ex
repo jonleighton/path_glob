@@ -55,7 +55,7 @@ defmodule PathGlob.MatchHelper do
     try do
       Path.wildcard(glob) == [path]
     rescue
-      e -> assert is_exception(e, wildcard_exception)
+      e -> assert is_struct(e, wildcard_exception)
     else
       _ -> raise "expected an error"
     end
