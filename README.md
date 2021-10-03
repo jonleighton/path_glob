@@ -14,6 +14,19 @@ glob without touching the filesystem. Internally, the glob pattern is compiled
 to a `Regex` and then checked via `String.match?/2`. If you want to compile the
 glob pattern ahead-of-time, you can use `PathGlob.compile/2`.
 
+## Installation
+
+The package can be installed by adding `path_glob` to your list of dependencies
+in `mix.exs`:
+
+```elixir
+def deps do
+  [
+    {:path_glob, "~> 0.1.0"}
+  ]
+end
+```
+
 ## Compatibility
 
 The aim of this library is to closely match the behaviour of `Path.wildcard/2`,
@@ -47,15 +60,8 @@ glob. For example, a glob of `/foo/bar/../a` would return the path
 filesystem, it doesn’t check whether the pattern is actually valid in relation
 to the contents of the filesystem.
 
-## Installation
+## Alternatives
 
-The package can be installed by adding `path_glob` to your list of dependencies
-in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:path_glob, "~> 0.1.0"}
-  ]
-end
-```
+* [ex_minimatch](https://github.com/gniquil/ex_minimatch) is a port of a
+  JavaScript library, and so doesn’t target compatibility with
+  `Path.wildcard/2`. It also appears to be an abandoned project.

@@ -12,9 +12,6 @@ defmodule PathGlob do
 
   defparsecp(:parse, glob(), inline: true)
 
-  @type path :: String.t()
-  @type glob :: String.t()
-
   @doc """
   Returns whether or not `path` matches the `glob`.
 
@@ -30,7 +27,7 @@ defmodule PathGlob do
       iex> PathGlob.match?("lib/.formatter.exs", "lib/*", match_dot: true)
       true
   """
-  @spec match?(path(), glob(), match_dot: boolean()) :: boolean()
+  @spec match?(String.t(), String.t(), match_dot: boolean()) :: boolean()
   def match?(path, glob, opts \\ []) do
     String.match?(path, compile(glob, opts))
   end
@@ -48,7 +45,7 @@ defmodule PathGlob do
       iex> PathGlob.compile("{lib,test}/path_*.ex", match_dot: true)
       ~r{^(lib|test)/path_[^/]*\\.ex$}
   """
-  @spec compile(glob(), match_dot: boolean()) :: Regex.t()
+  @spec compile(String.t(), match_dot: boolean()) :: Regex.t()
   def compile(glob, opts \\ []) do
     case parse(glob) do
       {:ok, [parse_tree], "", _, _, _} ->
