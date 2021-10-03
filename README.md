@@ -1,5 +1,9 @@
 # PathGlob
 
+[![Actions Status](https://github.com/jonleighton/path_glob/workflows/elixir/badge.svg)](https://github.com/jonleighton/elixir/actions)
+[![Module Version](https://img.shields.io/hexpm/v/path_glob.svg)](https://hex.pm/packages/path_glob)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/path_glob/)
+
 `PathGlob` tests whether a file path matches a glob pattern, without touching
 the filesystem. It has the same semantics as `Path.wildcard/2`.
 
