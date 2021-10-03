@@ -35,6 +35,12 @@ bugs and all. Internally, `Path.wildcard/2` is implemented via Erlang’s
 There is an extensive test suite, and every assertion is checked against both
 `Path.wildcard/2` and `PathGlob.match?/3` to ensure compatibility.
 
+Elixir >= 1.10 is supported. The CI currently runs against:
+
+* Elixir 1.10 / OTP 22
+* Elixir 1.11 / OTP 23
+* Elixir 1.12 / OTP 24
+
 ## Caveats
 
 Some behaviour is not identical to `Path.wildcard/2`:
