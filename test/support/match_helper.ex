@@ -55,7 +55,12 @@ defmodule PathGlob.MatchHelper do
     try do
       Path.wildcard(glob) == [path]
     rescue
-      e -> assert is_struct(e, wildcard_exception)
+      exception ->
+        # This can be changed to is_exception when we drop Elixir 1.10 support
+        assert match?(
+                 %{__struct__: ^wildcard_exception, __exception__: true},
+                 exception
+               )
     else
       _ -> raise "expected an error"
     end
