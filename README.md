@@ -65,3 +65,7 @@ to the contents of the filesystem.
 * [ex_minimatch](https://github.com/gniquil/ex_minimatch) is a port of a
   JavaScript library, and so doesn’t target compatibility with
   `Path.wildcard/2`. It also appears to be an abandoned project.
+
+## License
+
+PathGlob is released under the [Apache License 2.0](LICENSE).
