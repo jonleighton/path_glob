@@ -1,12 +1,11 @@
 # PathGlob
 
-`PathGlob` is a glob library for Elixir.
+`PathGlob` tests whether a file path matches a glob pattern, without touching
+the filesystem. It has the same semantics as `Path.wildcard/2`.
 
-Elixir’s built-in
-[`Path.wildcard/2`](https://hexdocs.pm/elixir/1.12/Path.html#wildcard/2)
-function allows you to find all paths that match a certain glob pattern. If
-you only want to know whether a _particular_ path matches a glob, then
-`Path.wildcard/2` can be slow (depending on the glob), because it needs to
+`Path.wildcard/2` allows you to find all paths that match a certain glob
+pattern. If you only want to know whether a _particular_ path matches a glob,
+then `Path.wildcard/2` can be slow (depending on the glob), because it needs to
 traverse the filesystem.
 
 `PathGlob` provides a `PathGlob.match?/3` function to check a path against a

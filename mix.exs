@@ -7,6 +7,8 @@ defmodule PathGlob.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
+      description: description(),
+      package: package(),
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
       name: "PathGlob",
@@ -26,6 +28,20 @@ defmodule PathGlob.MixProject do
   def application do
     [
       extra_applications: [:logger]
+    ]
+  end
+
+  defp description() do
+    """
+    PathGlob tests whether a file path matches a glob pattern, without touching
+    the filesystem. It has the same semantics as Path.wildcard/2.
+    """
+  end
+
+  defp package() do
+    [
+      licenses: ["Apache-2.0"],
+      links: %{"GitHub" => "https://github.com/jonleighton/path_glob"}
     ]
   end
 
