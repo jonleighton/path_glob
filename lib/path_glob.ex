@@ -7,8 +7,25 @@ defmodule PathGlob do
   import PathGlob.Parser
   import NimbleParsec, only: [defparsecp: 3]
 
-  require Logger
-  Logger.put_module_level(__MODULE__, :none)
+  if System.version() >= "1.11" && Code.ensure_loaded?(Mix) && Mix.env() == :test do
+    require Logger
+    Logger.put_module_level(__MODULE__, :none)
+
+    defmacrop debug(message) do
+      quote do
+        require Logger
+        Logger.debug("PathGlob: " <> unquote(message))
+      end
+    end
+  else
+    defmacrop debug(message) do
+      quote do
+        # Avoid unused variable warning
+        _ = fn -> unquote(message) end
+        :ok
+      end
+    end
+  end
 
   defparsecp(:parse, glob(), inline: true)
 
@@ -54,22 +71,20 @@ defmodule PathGlob do
           |> transform(Keyword.get(opts, :match_dot, false))
           |> Regex.compile!()
 
-        Logger.debug(
-          "PathGlob: " <>
-            inspect(
-              %{
-                glob: glob,
-                regex: regex,
-                parse_tree: parse_tree
-              },
-              pretty: true
-            )
+        inspect(
+          %{
+            glob: glob,
+            regex: regex,
+            parse_tree: parse_tree
+          },
+          pretty: true
         )
+        |> debug()
 
         regex
 
       {:error, _, _, _, _, _} = error ->
-        Logger.debug("PathGlob: #{inspect(error)}")
+        debug(inspect(error))
         raise ArgumentError, "failed to parse '#{glob}'"
     end
   end
