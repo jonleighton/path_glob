@@ -25,7 +25,7 @@ in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:path_glob, "~> 0.1.1"}
+    {:path_glob, "~> 0.2.0"}
   ]
 end
 ```
