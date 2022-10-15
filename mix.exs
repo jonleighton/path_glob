@@ -48,7 +48,7 @@ defmodule PathGlob.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:nimble_parsec, "~> 1.1.0", runtime: false},
+      {:nimble_parsec, "~> 1.2.3", runtime: false},
       {:ex_doc, "~> 0.24", only: :dev, runtime: false}
     ]
   end
