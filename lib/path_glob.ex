@@ -44,9 +44,16 @@ defmodule PathGlob do
       iex> PathGlob.match?("lib/.formatter.exs", "lib/*", match_dot: true)
       true
   """
+  def match?(path, glob, opts \\ [])
+
   @spec match?(String.t(), String.t(), match_dot: boolean()) :: boolean()
-  def match?(path, glob, opts \\ []) do
+  def match?(path, glob, opts) when is_binary(glob) do
     String.match?(path, compile(glob, opts))
+  end
+
+  @spec match?(String.t(), Regex.t(), match_dot: boolean()) :: boolean()
+  def match?(path, glob, _opts) when is_struct(glob, Regex) do
+    String.match?(path, glob)
   end
 
   @doc """
