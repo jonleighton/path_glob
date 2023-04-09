@@ -17,6 +17,17 @@ glob without touching the filesystem. Internally, the glob pattern is compiled
 to a `Regex` and then checked via `String.match?/2`. If you want to compile the
 glob pattern ahead-of-time, you can use `PathGlob.compile/2`.
 
+## Usage
+
+```elixir
+# when using precompiled glob
+iex> PathGlob.compile("{foo,bar}") |> PathGlob.match?("foo")
+
+
+# with string input (slower on multiple matches with the same pattern)
+iex> PathGlob.match?("{foo,bar}", "foo")
+```
+
 ## Installation
 
 The package can be installed by adding `path_glob` to your list of dependencies

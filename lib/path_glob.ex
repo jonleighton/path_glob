@@ -38,21 +38,21 @@ defmodule PathGlob do
 
   ## Examples
 
-      iex> PathGlob.match?("lib/path_glob.ex", "{lib,test}/path_*.ex")
+      iex> PathGlob.match?("{lib,test}/path_*.ex", "lib/path_glob.ex")
       true
 
-      iex> PathGlob.match?("lib/.formatter.exs", "lib/*", match_dot: true)
+      iex> PathGlob.match?("lib/*", "lib/.formatter.exs", match_dot: true)
       true
   """
   def match?(path, glob, opts \\ [])
 
   @spec match?(String.t(), String.t(), match_dot: boolean()) :: boolean()
-  def match?(path, glob, opts) when is_binary(glob) do
+  def match?(glob, path,  opts) when is_binary(glob) do
     String.match?(path, compile(glob, opts))
   end
 
-  @spec match?(String.t(), Regex.t(), match_dot: boolean()) :: boolean()
-  def match?(path, glob, _opts) when is_struct(glob, Regex) do
+  @spec match?(Regex.t(), String.t(), match_dot: boolean()) :: boolean()
+  def match?(glob, path,  _opts) when is_struct(glob, Regex) do
     String.match?(path, glob)
   end
 

@@ -35,7 +35,7 @@ defmodule PathGlob.MatchHelper do
     assert path in Path.wildcard(glob, opts),
            "expected #{wildcard_call(glob, opts)} to include '#{path}'"
 
-    assert PathGlob.match?(path, glob, opts),
+    assert PathGlob.match?(glob, path, opts),
            "expected '#{glob}' to match '#{path}'"
   end
 
@@ -43,7 +43,7 @@ defmodule PathGlob.MatchHelper do
     assert path not in Path.wildcard(glob, opts),
            "expected #{wildcard_call(glob, opts)} not to include '#{path}'"
 
-    refute PathGlob.match?(path, glob, opts),
+    refute PathGlob.match?(glob, path, opts),
            "expected '#{glob}' not to match '#{path}'"
   end
 
@@ -65,7 +65,7 @@ defmodule PathGlob.MatchHelper do
       _ -> raise "expected an error"
     end
 
-    assert_raise(ArgumentError, fn -> PathGlob.match?(path, glob) end)
+    assert_raise(ArgumentError, fn -> PathGlob.match?(glob, path) end)
   end
 
   def within_tmpdir(path, fun) do

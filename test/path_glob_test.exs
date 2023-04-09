@@ -236,7 +236,7 @@ defmodule PathGlobTest do
     test "** pattern" do
       within_tmpdir("foo/bar/baz", fn ->
         assert "foo/bar/../bar" in Path.wildcard("foo/bar/../*")
-        assert PathGlob.match?("foo/bar/../bar", "foo/bar/../*")
+        assert PathGlob.match?("foo/bar/../*", "foo/bar/../bar")
       end)
     end
   end
@@ -257,9 +257,9 @@ defmodule PathGlobTest do
     # Testing this the normal way would cause us to traverse the entire
     # filesystem
     test "double star" do
-      assert PathGlob.match?(absolute("foo/bar"), "/**/bar")
-      assert PathGlob.match?(absolute("foo"), "/**/foo")
-      refute PathGlob.match?(absolute("foo/bar"), "/**/foo")
+      assert PathGlob.match?("/**/bar", absolute("foo/bar"))
+      assert PathGlob.match?("/**/foo", absolute("foo"))
+      refute PathGlob.match?("/**/foo", absolute("foo/bar"))
     end
   end
 
